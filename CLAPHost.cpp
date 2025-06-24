@@ -317,7 +317,7 @@ bool ClapHost::Initialize() {
     *m_clapHost = {
         CLAP_VERSION_INIT,
         this,
-        "CLAP Host", "BOOK-0225", "", "0.0.1",
+        "CLAP Host", "BOOK-0225", "", "0.0.3",
         host_get_extension,
         host_request_restart,
         nullptr,

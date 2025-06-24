@@ -172,6 +172,7 @@ public:
     void Cleanup();
     void RequestStop();
     void RequestPluginCallback();
+    bool ResizeGui(uint32_t width, uint32_t height);
 
 private:
     static DWORD WINAPI PipeThreadProc(LPVOID p) { ((ClapHost*)p)->HandlePipeCommands(); return 0; }
@@ -247,9 +248,28 @@ static void host_log_callback(const clap_host_t* host, clap_log_severity severit
 
 static const clap_host_log log_extension = { host_log_callback };
 
+static void host_gui_resize_hints_changed(const clap_host_t* host) {
+    DbgPrint(_T("Plugin GUI resize hints changed."));
+}
+
+static bool host_gui_request_resize(const clap_host_t* host, uint32_t width, uint32_t height) {
+    if (host->host_data) {
+        return static_cast<ClapHost*>(host->host_data)->ResizeGui(width, height);
+    }
+    return false;
+}
+
+static const clap_host_gui gui_extension = {
+   host_gui_resize_hints_changed,
+   host_gui_request_resize,
+};
+
 static const void* host_get_extension(const struct clap_host* host, const char* extension_id) {
     if (strcmp(extension_id, CLAP_EXT_LOG) == 0) {
         return &log_extension;
+    }
+    if (strcmp(extension_id, CLAP_EXT_GUI) == 0) {
+        return &gui_extension;
     }
     return nullptr;
 }
@@ -714,6 +734,17 @@ void ClapHost::ShowGui() {
     m_pExtGui->set_parent(m_pPlugin, &win);
     m_pExtGui->show(m_pPlugin);
     ShowWindow(m_hGuiWindow, SW_SHOW);
+}
+
+bool ClapHost::ResizeGui(uint32_t width, uint32_t height) {
+    if (!m_hGuiWindow || !IsWindow(m_hGuiWindow)) {
+        return false;
+    }
+    DbgPrint(_T("Plugin requested GUI resize to %u x %u. Resizing window."), width, height);
+    RECT rc = { 0, 0, (LONG)width, (LONG)height };
+    AdjustWindowRect(&rc, GetWindowLong(m_hGuiWindow, GWL_STYLE), FALSE);
+    SetWindowPos(m_hGuiWindow, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+    return true;
 }
 
 void ClapHost::HideGui() {

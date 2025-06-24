@@ -127,7 +127,7 @@ IPCオブジェクトの最終的な名前は、指定された [ベース名] �
 
 開発者コマンドプロンプト上で
 
-1. ```git clone --recursive https://github.com/Book-0225/Clap_host.git```
+1. ```git clone --recursive https://github.com/Book-0225/CLAP_Host.git```
 2. ```cd Clap_host```
 3. ```msbuild /p:Configuration=Release /p:Platform="x64"```
 
